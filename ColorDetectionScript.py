@@ -1,6 +1,18 @@
 import cv2
 import numpy as np
+from flask import Flask
   
+CurrentColor = ""
+  
+def APISetup():
+    app = Flask(__name__)
+
+    @app.route("/")
+    def hello_world():
+        return "Hello, World!"
+    
+APISetup()
+
 # taking the input from webcam
 vid = cv2.VideoCapture(1)
   
@@ -24,8 +36,9 @@ while True:
     # displaying the most prominent color
     print(str(b_mean) + ' | ' + str(g_mean) + ' | ' + str(r_mean))
     if (b_mean > g_mean and b_mean > r_mean):
-        print("Blue")
+        CurrentColor = "Blue"
     elif (g_mean > r_mean and g_mean > b_mean):
-        print("Green")
+        CurrentColor = "Green"
     else:
-        print("Red")
+        CurrentColor = "Red"
+        
