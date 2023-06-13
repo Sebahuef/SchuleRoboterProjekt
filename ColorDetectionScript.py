@@ -79,7 +79,7 @@ def run():
     client = connect_mqtt()
     client.loop_start()
     
-    input()
-    camStart(client)
+    if True:
+        camStart(client)
 
 run()
