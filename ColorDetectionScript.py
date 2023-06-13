@@ -1,3 +1,4 @@
+#https://www.elektronik-kompendium.de/sites/raspberry-pi/2603101.htm
 from paho.mqtt import client as mqtt_client
 import random
 import numpy as np
