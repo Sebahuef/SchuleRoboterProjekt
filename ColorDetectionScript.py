@@ -15,16 +15,11 @@ CurrentColor = []
 def camStart():
     print("Start detecting colors!")
     while True:
-      
-        # capturing the current frame
         _, frame = vid.read()
-      
-        # setting values for base colors
         b = frame[:, :, :2]
         g = frame[:, :, 1:2]
         r = frame[:, :, 2:]
       
-        # computing the mean
         b_mean = np.mean(b)
         g_mean = np.mean(g)
         r_mean = np.mean(r)
@@ -59,9 +54,7 @@ def startRGBServer():
                                 if len(data)>1:
                                     if data[1]=="color":
                                         color = CurrentColor
-                                        print("Processing image...")
-                                        print("Dominant color: ")
-                                        print(color)
+                                        print("Send Color...")
                                         conn.sendall(bytes(color))
                             if(data[0]=="close"):
                                 s.close()
