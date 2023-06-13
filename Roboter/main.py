@@ -4,12 +4,6 @@ import random
 import json
 
 Color = None
-
-broker = '10.100.20.142'
-port = 1883
-topic = "CubeColor"
-
-client_id = f'python-mqtt-{random.randint(0, 1000)}'
     
 def main():
     client = connect_mqtt()
@@ -25,6 +19,8 @@ def main():
         if Color != None:
         
             input("Start:")
+            
+            GetCurrentColor()
         
             ctrlBot.toggleSuction()
             ctrlBot.moveArmXYZ(286,12,-36)
@@ -45,28 +41,43 @@ def main():
             
         else:
             print("Color None")
-        
-def connect_mqtt():
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
             
-            client.subscribe("CubeColor")
-        else:
-            print("Failed to connect, return code %d\n", rc)
-    
-    def on_message(client, userdata, msg):
-        global Color
-        
-        Data = json.loads(msg.payload)
-        Color = Data['color']
-    
-    client = mqtt_client.Client(client_id)
-    client.on_connect = on_connect
-    client.on_message = on_message
-    client.connect(broker, port)
-    return client
+def get_colour_name(b_mean, g_mean, r_mean):
+    currentColor = ""
+    # Bestimmt die prominenteste Farbe und setzt die Variable
+    if (b_mean > g_mean and b_mean > r_mean) :
+        currentColor = "blue"
+    elif (g_mean > r_mean and g_mean > b_mean) :
+        currentColor = "green”"
+    else:
+        currentColor = "red"
+    return currentColor
+
+def GetCurrentColor():
+    HOST = "10.62.255.10" # The server's hostname or IP address
+    PORT = 65432
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.connect((HOST, PORT))
+        while True:
+            try:
+                data = "get color"
+                s.sendall(bytes(data, "ascii"))
+                if(data=="close"):
+                    print("closing...")
+                    s.sendall(bytes("close", "ascii"))
+                    s.close()
+                    break;
+                else:
+                    data = s.recv(1024)
+                    print([data[0], data[1], data[2]])
+                    actual_name = get_colour_name(data[0], data[1], data[2])
+                    Color = actual_name
+                    return
+            except KeyboardInterrupt:
+                s.sendall(bytes("close", "ascii"))
+                s.close()
 
 main()
+
 
 
