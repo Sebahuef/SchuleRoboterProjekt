@@ -1,33 +1,16 @@
-#https://www.elektronik-kompendium.de/sites/raspberry-pi/2603101.htm
 from paho.mqtt import client as mqtt_client
 import random
 import numpy as np
 import cv2
 import json
+import socket
 
 print("Loading Camera...")
 vid = cv2.VideoCapture(0)
 
 CurrentColor = ""
-LastColor = ""
 
-broker = '10.100.20.142'
-port = 1883
-topic = "CubeColor"
-
-client_id = f'python-mqtt-{random.randint(0, 1000)}'
-
-def publishColor(client):
-    global LastColor
-    global CurrentColor
-    
-    if(LastColor != CurrentColor):
-        LastColor = CurrentColor
-        currentColorJSON = json.dumps({"color": CurrentColor})
-        client.publish("CubeColor", currentColorJSON, 0, True)
-        print("Color published: " + CurrentColor)
-
-def camStart(client):
+def camStart():
     print("Start detecting colors!")
     while True:
       
@@ -54,33 +37,42 @@ def camStart(client):
             CurrentColor = "Green"
         else:
             CurrentColor = "Red"
-            
-        #print(CurrentColor)
-        publishColor(client)
-
-def connect_mqtt():
-    def on_connect(client, userdata, flags, rc):
-        if rc == 0:
-            print("Connected to MQTT Broker!")
-        else:
-            print("Failed to connect, return code %d\n", rc)
-            
-    def on_publish(client, userdata, result):
-        print("Published")
         
-    # Set Connecting Client ID
-    client = mqtt_client.Client(client_id)
-    # client.username_pw_set(username, password)
-    client.on_connect = on_connect
-    client.on_publish = on_publish
-    client.connect(broker, port)
-    return client
+def startRGBServer():
+    HOST = "0.0.0.0"
+    PORT = 65432
+    while True:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            s.bind((HOST, PORT))
+            s.listen()
+            conn, addr = s.accept()
+            with conn:
+                print(f"Connection established with {addr}.")
+                while True:
+                    try:
+                        data = conn.recv(1024).decode("ascii")
+                        data = data.split(" ")
+                        if len(data)>0:
+                            if data[0]=="get":
+                                if len(data)>1:
+                                    if data[1]=="color":
+                                        color = CurrentColor
+                                        print("Processing image...")
+                                        print("Dominant color: ")
+                                        print(color)
+                                        conn.sendall(bytes(color))
+                            if(data[0]=="close"):
+                                s.close()
+                                print(f"Connection with {addr} closed. ")
+                                break
+                    except socket.error as e:
+                        s.close()
+                        break
+                
 
 def run():
-    client = connect_mqtt()
-    client.loop_start()
-    
-    if True:
-        camStart(client)
+    startRGBServer()
+    camStart()
 
 run()
