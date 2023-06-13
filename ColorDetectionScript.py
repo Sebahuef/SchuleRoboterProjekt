@@ -4,11 +4,13 @@ import numpy as np
 import cv2
 import json
 import socket
+from threading import Thread
 
 print("Loading Camera...")
 vid = cv2.VideoCapture(0)
+print("Camera loaded")
 
-CurrentColor = ""
+CurrentColor = []
 
 def camStart():
     print("Start detecting colors!")
@@ -29,30 +31,29 @@ def camStart():
       
         global CurrentColor
       
-        # displaying the most prominent color
-        # print(str(b_mean) + ' | ' + str(g_mean) + ' | ' + str(r_mean))
-        if (b_mean > g_mean and b_mean > r_mean):
-            CurrentColor = "Blue"
-        elif (g_mean > r_mean and g_mean > b_mean):
-            CurrentColor = "Green"
-        else:
-            CurrentColor = "Red"
+        CurrentColor = []
+      
+        CurrentColor.append(int(b_mean))
+        CurrentColor.append(int(g_mean))
+        CurrentColor.append(int(r_mean))
         
 def startRGBServer():
     HOST = "0.0.0.0"
     PORT = 65432
+    print("StartRGBServer...")
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             s.bind((HOST, PORT))
             s.listen()
             conn, addr = s.accept()
-            with conn:
+            with  conn:
                 print(f"Connection established with {addr}.")
                 while True:
                     try:
                         data = conn.recv(1024).decode("ascii")
                         data = data.split(" ")
+                        
                         if len(data)>0:
                             if data[0]=="get":
                                 if len(data)>1:
@@ -72,7 +73,10 @@ def startRGBServer():
                 
 
 def run():
-    startRGBServer()
-    camStart()
+    RGBServer = Thread(target=startRGBServer)
+    RGBServer.start()
+    
+    Cam = Thread(target=camStart)
+    Cam.start()
 
 run()
