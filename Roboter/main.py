@@ -2,12 +2,20 @@ import DoBotArm as Dbt
 import random
 import json
 import socket
-    
+import asyncio
+import pymongo
+
+myclient = None
+myDb = None
+myCol = None
+
 def main():
     homeX, homeY, homeZ = 257, 4, 76, 
     ctrlBot = Dbt.DoBotArm(homeX, homeY, homeZ)
     
     while True:
+        
+        global mycol
         
         input("Start:")
             
@@ -37,6 +45,9 @@ def main():
             print("No Color detected")
         
         ctrlBot.moveHome()
+        
+        mydict = { "Color": Color, "Status": "1", "Type": "Cube" }
+        mycol.insert_one(mydict)
             
 def get_colour_name(b_mean, g_mean, r_mean):
     currentColor = ""
@@ -49,7 +60,7 @@ def get_colour_name(b_mean, g_mean, r_mean):
     return currentColor
 
 def GetCurrentColor():
-    HOST = "10.62.255.10"
+    HOST = "localhost"
     PORT = 65432
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.connect((HOST, PORT))
@@ -66,9 +77,18 @@ def GetCurrentColor():
             except KeyboardInterrupt:
                 s.sendall(bytes("close", "ascii"))
                 s.close()
+                
+async def ConnectToDatabase():
+    global myclient
+    global mydb
+    global mycol
+    
+    myclient = pymongo.MongoClient("mongodb://10.100.20.142:27017/")
+    
+    mydb = myclient["Roboter"]
+    mycol = mydb["CubeColor"]
+    print("Connected to MongoDB")
 
+
+asyncio.run(ConnectToDatabase())
 main()
-
-
-
-
