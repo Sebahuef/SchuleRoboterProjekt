@@ -1,3 +1,4 @@
+# import all important tools
 import DoBotArm as Dbt
 import random
 import json
@@ -9,7 +10,9 @@ myclient = None
 myDb = None
 myCol = None
 
+#check which color is detected and selects field with associated color 
 def main():
+    #declated fixed start position
     homeX, homeY, homeZ = 257, 4, 76, 
     ctrlBot = Dbt.DoBotArm(homeX, homeY, homeZ)
     
@@ -26,6 +29,7 @@ def main():
     
         ctrlBot.moveHome()
     
+    #check which color is detected 
         if Color == "red":
             ctrlBot.moveArmXYZ(182,190,50)
             ctrlBot.moveArmXYZ(182,190,-33)
@@ -48,7 +52,8 @@ def main():
         
         mydict = { "Color": Color, "Status": "1", "Type": "Cube" }
         mycol.insert_one(mydict)
-            
+
+#color detection with modules            
 def get_colour_name(b_mean, g_mean, r_mean):
     currentColor = ""
     if (b_mean > g_mean and b_mean > r_mean) :
@@ -59,6 +64,7 @@ def get_colour_name(b_mean, g_mean, r_mean):
         currentColor = "red"
     return currentColor
 
+#socket request and gets data from colordetection
 def GetCurrentColor():
     HOST = "localhost"
     PORT = 65432
@@ -77,7 +83,9 @@ def GetCurrentColor():
             except KeyboardInterrupt:
                 s.sendall(bytes("close", "ascii"))
                 s.close()
-                
+
+
+#connect and save values in DB        
 async def ConnectToDatabase():
     global myclient
     global mydb
