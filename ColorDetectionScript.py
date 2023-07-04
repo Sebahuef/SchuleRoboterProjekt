@@ -1,4 +1,3 @@
-#Import all important tools
 from paho.mqtt import client as mqtt_client
 import random
 import numpy as np
@@ -7,14 +6,12 @@ import json
 import socket
 from threading import Thread
 
-#shows loading text while programm is executed
 print("Loading Camera...")
 vid = cv2.VideoCapture(0)
 print("Camera loaded")
 
 CurrentColor = []
 
-#starts cam and builds rdb colors
 def camStart():
     print("Start detecting colors!")
     while True:
@@ -35,10 +32,9 @@ def camStart():
         CurrentColor.append(int(g_mean))
         CurrentColor.append(int(r_mean))
         
-#starts sockerserver and wait for the connection
 def startRGBServer():
     HOST = "0.0.0.0"
-    PORT = 65432
+    PORT = 4840
     print("StartRGBServer...")
     while True:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
@@ -69,7 +65,6 @@ def startRGBServer():
                         break
                 
 
-#execute final run function to gets color
 def run():
     RGBServer = Thread(target=startRGBServer)
     RGBServer.start()
