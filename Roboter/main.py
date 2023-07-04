@@ -56,7 +56,7 @@ def main():
         mydict = { "Color": Color, "Status": "1", "Type": "Cube" }
         mycol.insert_one(mydict)
         
-        mqttc.publish("temperatur", str(GetCurrentTemp()))
+        mqttc.publish("temperatur", str(GetCurrentTemp()),payload=None, qos=0, retain=True)
             
 def get_colour_name(b_mean, g_mean, r_mean):
     currentColor = ""
