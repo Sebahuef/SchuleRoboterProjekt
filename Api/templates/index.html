@@ -8,7 +8,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
   <!-- example for js diagram  https://tobiasahlin.com/blog/chartjs-charts-to-get-you-started/-->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
   <script src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
 
@@ -166,20 +166,29 @@ function CreateChart(){
 	new Chart(document.getElementById("bar-chart"), {
 		type: 'bar',
 		data: {
-		labels: ["Blau", "Rot", "Grün",],
-		datasets: [
-			{
-			label: "Menge",
-			backgroundColor: ["blue", "red","lightgreen"],
-			data: [GetColorCount("blue"),GetColorCount("red"),GetColorCount("green")]
-			}
-		]
+			labels: ["Blau", "Rot", "Grün",],
+			datasets: [
+				{
+				label: "Menge",
+				backgroundColor: ["blue", "red","lightgreen"],
+				data: [GetColorCount("blue"),GetColorCount("red"),GetColorCount("green")]
+				}
+			]
 		},
 		options: {
 			legend: { display: false },
 			title: {
-			display: true,
-			text: 'Anzahl der abgelegten Würfel'
+				display: true,
+				text: 'Anzahl der abgelegten Würfel'
+			},
+			scales: {
+				y: {
+					max: GetMaxColorCount(),
+					min: 0,
+					ticks: {
+						stepSize: 1
+					}
+				}
 			}
 		}
 	});
@@ -187,6 +196,7 @@ function CreateChart(){
 
 function CreateTemometer(Temp){
 	FusionCharts.ready(function(){
+	debugger;
 		var chartObj = new FusionCharts({
 			type: 'thermometer',
 			renderAt: 'thermometer',
@@ -209,9 +219,9 @@ function CreateTemometer(Temp){
 					"thmOriginX": "100",
 					"chartBottomMargin": "20",
 					"valueFontColor": "#000000",
-					"theme": "fusion"
-				<!-- }, -->
-				"value": Temp,
+					"theme": "fusion",
+					"value": Temp,
+				}
 			},
 		});
 		chartObj.render();
@@ -223,6 +233,16 @@ function CreateTemometer(Temp){
 function GetColorCount(Color){
 	return CubeApiData.filter(cube => cube.Color == Color).length;
 }
+
+function GetMaxColorCount(){
+	let Data = [GetColorCount("blue"), GetColorCount("red"), GetColorCount("green")];
+	
+	return (Data.max + 1);
+}
+
+Array.prototype.max = function() {
+  return Math.max.apply(null, this);
+};
 
 $(document).ready(function () {
     thermometer();
